@@ -1,0 +1,25 @@
+# Web application
+Flask
+requests
+
+# Deep learning / embeddings
+torch
+transformers
+sentence-transformers
+
+# Similarity search
+faiss-cpu
+
+# Video and image processing
+numpy
+Pillow
+opencv-python
+ImageHash
+ffmpeg-python
+
+# Notebook environment
+jupyter
+
+# Note:
+# TransNetV2 is expected to be added/installed separately.
+# The project also requires the FFmpeg executable to be installed on the system.

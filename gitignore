@@ -1,0 +1,81 @@
+# -------------------------
+# Python
+# -------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# -------------------------
+# Virtual environments
+# -------------------------
+.venv/
+venv/
+env/
+ENV/
+
+# -------------------------
+# Jupyter
+# -------------------------
+.ipynb_checkpoints/
+
+# -------------------------
+# Environment variables / secrets
+# -------------------------
+.env
+.env.*
+!.env.example
+
+# -------------------------
+# IDE / editor files
+# -------------------------
+.vscode/
+.idea/
+
+# -------------------------
+# Operating system files
+# -------------------------
+.DS_Store
+Thumbs.db
+
+# -------------------------
+# Project-generated files
+# -------------------------
+video_processing_results.db
+frame_*.jpg
+
+# The preprocessing notebook creates folders such as ID04/, ID05/, ...
+ID[0-9]*/
+
+# Optional generated-data folders
+keyframes/
+frames/
+temp/
+tmp/
+output/
+
+# -------------------------
+# Video datasets
+# -------------------------
+V3C1-100/
+data/
+videos/
+*.mp4
+*.avi
+*.mkv
+*.mov
+
+# -------------------------
+# Model weights
+# -------------------------
+*.pth
+*.pt
+*.ckpt
+*.bin
+
+# -------------------------
+# Logs
+# -------------------------
+*.log

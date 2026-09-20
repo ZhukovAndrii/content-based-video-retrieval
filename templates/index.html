@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Learning Video Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #d7f0d7; /* Matching the background color */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 700px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+            outline: none;
+        }
+        input[type="text"]:focus {
+            border-color: #007BFF;
+            box-shadow: 0 0 8px rgba(0,123,255,0.5);
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+        .result.show {
+            transform: scale(1.02);
+        }
+        .result h2 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .result p {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .video-container {
+            margin-top: 20px;
+            border: 5px solid transparent;
+            transition: border-color 0.3s ease;
+            position: relative;
+        }
+        .video-container.highlight {
+            border-color: green;
+        }
+        video {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Deep Learning Video Analysis</h1>
+        <div class="form-group">
+            <label for="query">Enter your search query:</label>
+            <input type="text" id="query" placeholder="Type your search query here..." onkeydown="if (event.key === 'Enter') search()">
+        </div>
+        <button onclick="search()">Search</button>
+        <div id="result" class="result" style="display: none;">
+            <h2>Search Result:</h2>
+            <p><strong>Video ID:</strong> <span id="video_id"></span></p>
+            <p><strong>Scene Start:</strong> <span id="scene_start"></span></p>
+            <p><strong>Scene End:</strong> <span id="scene_end"></span></p>
+            <p><strong>Caption:</strong> <span id="caption"></span></p>
+            <div class="video-container" id="videoContainer">
+                <video id="videoPlayer" controls>
+                    <source id="videoSource" src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+
+            <!-- THIS PART FOR ADDING A SUBMIT BUTTON -->
+            <button id="submitDresButton" style="margin-top: 20px; display: none;" onclick="submitToDres()">Submit to DRES</button>
+        </div>
+    </div>
+
+    <script>
+        let currentResult = null;
+
+        async function search() {
+            const query = document.getElementById('query').value;
+            const videoContainer = document.querySelector('.video-container');
+            const resultContainer = document.getElementById('result');
+            const response = await fetch('/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                currentResult = result;
+                document.getElementById('video_id').textContent = result.video_id;
+                document.getElementById('scene_start').textContent = result.scene_start;
+                document.getElementById('scene_end').textContent = result.scene_end;
+                document.getElementById('caption').textContent = result.caption;
+                document.getElementById('videoSource').src = `/videos/001${result.video_id.toString().padStart(2, '0')}/001${result.video_id.toString().padStart(2, '0')}.mp4#t=${convertToSeconds(result.scene_start)}`;
+                document.getElementById('videoPlayer').load();
+                resultContainer.style.display = 'block';
+                resultContainer.classList.add('show');
+                
+                // Highlight video boundary
+                videoContainer.classList.add('highlight');
+                setTimeout(() => {
+                    videoContainer.classList.remove('highlight');
+                }, 2000); // Highlight duration
+
+                // Show the submit button
+                document.getElementById('submitDresButton').style.display = 'block';
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.error}`);
+            }
+        }
+
+        function convertToSeconds(timecode) {
+            const [hours, minutes, seconds] = timecode.split(':').map(Number);
+            return hours * 3600 + minutes * 60 + seconds;
+        }
+
+        async function submitToDres() {
+            if (!currentResult) {
+                alert('No result to submit');
+                return;
+            }
+
+            const response = await fetch('/submit_to_dres', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(currentResult)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert('Submission successful!');
+            } else {
+                const error = await response.json();
+                alert(`Error: ${error.error}`);
+            }
+        }
+    </script>
+</body>
+</html>
